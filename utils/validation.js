@@ -16,7 +16,6 @@ export const validateAndHashPassword = async (password) => {
 
   if (!passwordRegex.test(password)) {
     return false
-    // throw new Error("Password should have at least one uppercase letter, one lowercase letter, one number, and one special character.");
   }
 
   const salt = await bcrypt.genSalt(10);
@@ -26,7 +25,6 @@ export const validateAndHashPassword = async (password) => {
 
 export const validateDateOfBirth = (dateString) => {
     if (!dateString) {
-        // If no DOB provided, simply return without validating
         return;
     }
     // Check the format using regex
@@ -39,7 +37,7 @@ export const validateDateOfBirth = (dateString) => {
     // Split the string to extract day, month, and year
     const [day, month, year] = dateString.split("/").map(str => parseInt(str, 10));
 
-    // Check if it's a valid date (e.g., 30/02/2021 would be invalid)
+    // Check if it's a valid date
     const dateObj = new Date(year, month - 1, day); // month is 0-indexed
     if (dateObj.getFullYear() !== year || dateObj.getMonth() + 1 !== month || dateObj.getDate() !== day) {
         throw new Error("Invalid Date of Birth provided.");

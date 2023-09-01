@@ -1,4 +1,3 @@
-import { ATLAS_DB_URL } from './config.js'
 import mongoose from 'mongoose'
 
 async function dbClose() {
@@ -25,11 +24,9 @@ const dbConnection = async () => {
         });
     } catch (error) {
         console.error('Error connecting to the database:', error);
-        // Exit the process with failure
+        // Exit the process with failure connection
         process.exit(1);
     }
 };
-
-
 
 export { dbClose, dbConnection }

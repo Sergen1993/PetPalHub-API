@@ -11,7 +11,7 @@ import { UserModel } from './models/User.js'
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname} from 'path';
 import './config.js'; 
 import { dbConnection } from './db.js'
 

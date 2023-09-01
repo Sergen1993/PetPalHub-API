@@ -34,11 +34,9 @@ router.post('/profile', verifyToken, carerProfileUpload.single('avatar'), async 
 
 router.get('/context',verifyToken, async (req, res, next) => {
     try {
-        // Assuming that after verifying the token, the user's ID is available in req.user.id
         const userId = req.user.id;
-    
-        // Fetch user details
-        const user = await CarerModel.findById(userId).select('-password') // Excluding the password for security reasons
+
+        const user = await CarerModel.findById(userId).select('-password')
 
         res.json({
             user
@@ -49,14 +47,12 @@ router.get('/context',verifyToken, async (req, res, next) => {
 )
 
 router.get('/profile', async (req, res) => {
-    const userId = req.query.userId; // Retrieve user ID from the query parameter
+    const userId = req.query.userId; 
 
     try {
-        // Retrieve the profile data from the database based on the userId
         const profileData = await CarerProfileModel.findOne({ userId: userId })
 
         if (!profileData) {
-            // Return a response indicating that no profile exists
             return res.status(204).send({ message: 'No profile found.' })
         }
 
@@ -105,7 +101,6 @@ router.get('/confirmedBookings', async (req, res) => {
     const { carerId } = req.query
 
     try {
-        // Fetch bookings where status is 'approved' and userId matches
         const bookings = await BookingModel.find({ carerId, status: 'Approved' })
         res.status(200).json(bookings)
     } catch (error) {

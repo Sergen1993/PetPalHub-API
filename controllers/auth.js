@@ -6,7 +6,7 @@ import { UserModel } from "../models/User.js";
 import { checkExistingEmail, validateAndHashPassword, validateDateOfBirth } from '../utils/validation.js';
 import { JWT_SECRET } from '../config.js'
 
-
+// register function for user/carer
 export const register = async (req, res, next) => {
     try {
         const emailExists = await checkExistingEmail(req.body.email, UserModel, CarerModel);
@@ -63,14 +63,78 @@ export const register = async (req, res, next) => {
 }
 
 
+
+// login function for user/carer
+export const login = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+
+        const user = await UserModel.findOne({ email });
+        const carer = await CarerModel.findOne({ email });
+
+        if (!user && !carer) {
+            return res.status(404).json({ error: "User not found" })
+        }
+
+        let model, role, tokenName;
+        if (user) {
+            model = UserModel;
+            role = 'user'
+            tokenName = "userToken"
+        } else if (carer) {
+            model = CarerModel;
+            role = 'carer'
+            tokenName = "carerToken"
+        }
+
+        const foundUser = user || carer;
+        const isPasswordCorrect = await bcrypt.compare(password, foundUser.password);
+        if (!isPasswordCorrect) {
+            return res.status(404).json({ error: "Password is incorrect" });
+        } else if (isPasswordCorrect) {
+            const { password: userPassword, ...otherDetails } = foundUser._doc;
+
+        // Create and send a cookie contaions authentication token
+            const token = jwt.sign({ id: foundUser._id, firstName: foundUser.firstName, role: foundUser.role, email: foundUser.email }, JWT_SECRET, {}, (err, token) => {
+                const userObject = foundUser.toObject();
+                const { password, ...userWithoutPassword } = userObject;
+                res.cookie(tokenName, token, {httpOnly: false, sameSite: 'none', secure: true}).json({...userWithoutPassword, userId: foundUser._id});
+            })}
+
+    } catch (err) {
+        console.error("Error during login:", err);
+        next(err);
+    }
+}
+
+// get profile function for carer/user
+export const getProfile = (req, res) => {
+    const tokenName = req.baseUrl === '/users' ? 'userToken' : 'carerToken' 
+    const token = req.cookies[tokenName] 
+
+    if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
+            if (err) {
+                console.error("Error verifying token:", err);
+                res.status(401).json({ error: "Unauthorized" });
+            } else {
+                res.json(decodedToken);
+            }
+        });
+    } else {
+        res.status(401).json({ error: "Unauthorized" });
+    }
+}
+
+// change details function for user/carer
 export const changeDetails = async (req, res, next) => {
     try {
-        const userId = req.params.userId; // Extract userId from route parameter
-        const userRole = req.params.userRole; // Extract userRole from route parameter
+        const userId = req.params.userId; 
+        const userRole = req.params.userRole; 
 
         const Model = userRole === 'user' ? UserModel : CarerModel
 
-        const existingUser = await Model.findById(userId); // Fetch the existing user
+        const existingUser = await Model.findById(userId);
 
         if (!existingUser) {
             return res.json({ error: 'User not found' })
@@ -94,7 +158,6 @@ export const changeDetails = async (req, res, next) => {
         existingUser.phoneNumber = req.body.phoneNumber || existingUser.phoneNumber
 
         if (req.body.password) {
-            // Hash the new password before saving
             const hashedPassword = await bcrypt.hash(req.body.password, 10)
             existingUser.password = hashedPassword;
         }
@@ -113,74 +176,3 @@ export const changeDetails = async (req, res, next) => {
         res.status(500).json({ message: 'Error updating user details', error: error.message });
     }
 }
-
-
-export const login = async (req, res, next) => {
-    try {
-        const { email, password } = req.body;
-
-        // Find the user by email in the users collection
-        const user = await UserModel.findOne({ email });
-        // Find the carer by email in the carers collection
-        const carer = await CarerModel.findOne({ email });
-
-        // Check if the provided email exists in either users or carers collection
-        if (!user && !carer) {
-            return res.status(404).json({ error: "User not found" })
-        }
-
-        // Determine which model to use based on the found user or carer
-        let model, role, tokenName;
-        if (user) {
-            model = UserModel;
-            role = 'user'
-            tokenName = "userToken"
-        } else if (carer) {
-            model = CarerModel;
-            role = 'carer'
-            tokenName = "carerToken"
-        }
-
-        // Check if the provided password matches the stored hash
-        const foundUser = user || carer;
-        const isPasswordCorrect = await bcrypt.compare(password, foundUser.password);
-        if (!isPasswordCorrect) {
-            return res.status(404).json({ error: "Password is incorrect" });
-        } else if (isPasswordCorrect) {
-            // Destructuring the user details and excluding password and any other sensitive information
-            const { password: userPassword, ...otherDetails } = foundUser._doc;
-
-        // Create and send an authentication token
-            const token = jwt.sign({ id: foundUser._id, firstName: foundUser.firstName, role: foundUser.role, email: foundUser.email }, JWT_SECRET, {}, (err, token) => {
-                const userObject = foundUser.toObject();
-                const { password, ...userWithoutPassword } = userObject;
-                res.cookie(tokenName, token, {httpOnly: false, sameSite: 'none', secure: true}).json({...userWithoutPassword, userId: foundUser._id});
-            })}
-
-    } catch (err) {
-        console.error("Error during login:", err);
-        next(err);
-    }
-}
-
-export const getProfile = (req, res) => {
-    const tokenName = req.baseUrl === '/users' ? 'userToken' : 'carerToken' // Adjust based on the route
-    const token = req.cookies[tokenName] // Get the token from the cookies
-
-    if (token) {
-        jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
-            if (err) {
-                // Token verification failed
-                console.error("Error verifying token:", err);
-                res.status(401).json({ error: "Unauthorized" });
-            } else {
-                // Token verification succeeded, return the user's data
-                res.json(decodedToken);
-            }
-        });
-    } else {
-        // No token found in cookies
-        res.status(401).json({ error: "Unauthorized" });
-    }
-}
-

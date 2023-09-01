@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
 import {EMAIL_USERNAME, EMAIL_PASSWORD } from '../config.js'
 
-// Setup mail transporter service
 const transporter = nodemailer.createTransport({
     service: 'gmail', 
     auth: {
@@ -12,10 +11,10 @@ const transporter = nodemailer.createTransport({
 
 export const sendEmail = async (to, subject, text) => {
     const mailOptions = {
-        from: process.env.EMAIL_USERNAME, // sender
-        to, // receiver
-        subject, // Subject
-        text, // plaintext body
+        from: process.env.EMAIL_USERNAME, 
+        to, 
+        subject, 
+        text, 
     };
 
     try {

@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: true,
-        trim: true, // Removes any whitespace from the beginning and end of the value
+        trim: true, 
     },
     lastName: {
         type: String,
@@ -14,10 +14,10 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true, // Ensures email addresses in the database are unique
+        unique: true, 
         trim: true,
-        lowercase: true, // Converts email to lowercase
-        match: [/.+\@.+\..+/, 'Please fill a valid email address'], // Email validation
+        lowercase: true, 
+        match: [/.+\@.+\..+/, 'Please fill a valid email address'], 
     },
     password: {
         type: String,
@@ -29,7 +29,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
     },
     profileImage: {
-        type: String, // URL or path to the image file
+        type: String, 
     },
     address: {
         street: {
