@@ -69,7 +69,7 @@ describe('Pet Profile API', () => {
         age: '12'
       });
     petId = response1.body.petId
-    expect(response1.status).toBe(200);
+    expect(response1.status).toBe(201);
   });
 
   it('Should fetch pet profiles for the user', async () => {

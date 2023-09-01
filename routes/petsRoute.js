@@ -16,7 +16,7 @@ router.post('/profile', verifyToken, petUpload.single('petImage'), async (req, r
       const newPetProfile = new PetModel(profileData);
       const savedPetProfile = await newPetProfile.save();
 
-      res.status(200).send({ message: 'Profile created successfully!', petId: savedPetProfile._id })
+      res.status(201).send({ message: 'Profile created successfully!', petId: savedPetProfile._id })
   } catch (error) {
       handleError(res, error, 'Failed to create profile.')
   }
@@ -25,8 +25,8 @@ router.post('/profile', verifyToken, petUpload.single('petImage'), async (req, r
 // for users to view their pet profiles in account
 router.get('/pet-profiles', async (req, res) => {
   try {
-    const userId = req.query.userId; // Get the userId from the query parameter
-    const petProfiles = await PetModel.find({ ownerId: userId }) // Fetch pet profiles owned by the specified user
+    const userId = req.query.userId; 
+    const petProfiles = await PetModel.find({ ownerId: userId })
     res.json(petProfiles)
   } catch (error) {
     handleError(res, error, 'Error fetching pet profiles:')
